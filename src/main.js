@@ -1,13 +1,24 @@
+/* Import external libraries */
 import "leaflet";
 import "./main.css";
+import * as THREE from 'three';
+import * as LocAR from "locar";
+import { GLTFLoader } from "three/examples/jsm/Addons.js";
 
+/* Import internal libraries */
+/* --- END --- */
+
+/* Declaration of variables */
 const app = document.getElementById("app");
 
 let leafletMap = null;
 let locations = [];
 let mapCenter = null;
 let mapZoom = null;
+/* --- END --- */
 
+
+/* CUSTOM FUNCTIONS */
 // Fetch model data from JSON file
 async function fetchModelData() {
   const res = await fetch("models.json");
@@ -15,18 +26,7 @@ async function fetchModelData() {
   return res.json();
 }
 
-// Not needed now with the building icon.
-/* // Red marker icon (public domain, from https://github.com/pointhi/leaflet-color-markers)
-const redIcon = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-}); */
-
-// Example: Custom building icon (uncomment and use if you want a building image)
+// Custom building icon
 const buildingIcon = new L.Icon({
   iconUrl: "bim.png",
   iconSize: [48, 48], // Increased size
@@ -77,7 +77,7 @@ function addLocationMarkers() {
   });
 }
 
-// This function allows navigation to the AR view for a specific model
+// This function allows the specific model to be added as AR element in the map.
 function goToAR(id) {
   if (leafletMap) {
     mapCenter = leafletMap.getCenter();
@@ -95,44 +95,119 @@ function showDisclaimer(show) {
 }
 
 // This function allows rendering the AR view for a specific model
+
 function renderARView(id) {
   showDisclaimer(false);
   const loc = locations.find((l) => l.id === id);
   if (!loc) return renderNotFound();
 
   app.innerHTML = `
-    <div id="ar-view" style="position:relative; min-height:80vh;">
-      <button class="btn" onclick="location.hash = '#'" style="margin-bottom: 1rem;">← Back to Map</button>
-      <model-viewer
-        id="model-viewer"
-        src="${loc.modelUrl}"
-        alt="3D model of ${loc.name}"
-        autoplay
-        ar
-        ar-modes="scene-viewer quick-look webxr"
-        camera-controls
-        max-field-of-view="180deg"
-        style="width:100%; max-width:600px; height:60vh; display:block; margin:0 auto;"
-      ></model-viewer>
-      <div style="
-        position: absolute;
-        left: 50%;
-        bottom: 125px;
-        transform: translateX(-50%);
-        background: rgba(255,255,255,0.95);
-        color: #0e0e0e;
-        padding: 5px 12px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        font-size: 1rem;
-        z-index: 1000;
-        border: 2px solid #888;
-        font-weight: bold;
-        text-align: center;">
-        Tap the button to view the model in Augmented Reality.
-      </div>
-    </div>
-  `;}
+  <button class="btn" onclick="location.hash = '#'" style="margin-bottom: 1rem;">← Back to Map</button>
+  <canvas id="ar-canvas" style="background-color: grey; width: 100vw height: 100vh"></canvas>
+  `;
+
+  /* Logic behind ARjs Location Based */
+  const fov = 80;
+  const nearClipPlane = 0.001;
+  const farClipPlane = 1000;
+  const aspectRatio = window.innerWidth / window.innerHeight;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(fov, aspectRatio, nearClipPlane, farClipPlane);
+  const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("ar-canvas") });
+
+  // Add ambient light for base illumination
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+  scene.add(ambientLight);
+
+  // Add sunlight (directional light) that follows the camera
+  const sunlight = new THREE.DirectionalLight(0xffffff, 2.0);
+  sunlight.position.set(0, 10, -10); // Initial position
+  scene.add(sunlight);
+
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+
+  /* Initiate the LocAR */
+  const locar = new LocAR.LocationBased(scene, camera);
+
+  const cam = new LocAR.Webcam({
+    video: {
+      facingMode: "environment"
+    }
+  }, null);
+
+  cam.on("webcamstarted", ev => {
+    scene.background = ev.texture;
+  });
+
+  cam.on("webcamerror", ev => {
+    alert("Webcam error: code ${error.code} message ${error.message}");
+  });
+
+  window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  let firstLocation = true;
+
+  const deviceOrientationControls = new LocAR.DeviceOrientationControls(camera);
+
+  deviceOrientationControls.on("deviceorientationerror", error => {
+    alert("Device orientation error: code ${error.code} message ${error.message}");
+  });
+
+  deviceOrientationControls.on("deviceorientationgranted", ev => {
+    ev.target.connect();
+  });
+
+  deviceOrientationControls.init();
+
+  locar.on("gpsupdate", async ev => {
+    if (firstLocation) {
+      firstLocation = false; // Prevent repeated execution immediately
+      alert("GPS location acquired. You can now see the AR content.");
+
+      // Load the GLB model from the location's URL and place it at the location's coordinates
+      const loader = new GLTFLoader();
+      try {
+        const gltf = await loader.loadAsync(loc.modelUrl);
+        const model = gltf.scene;
+        // Adjust model height so it appears at ground level
+        model.position.y = -2.8; // Phone held at 1.8m
+        // Adjust orientation (rotate as needed)
+        model.rotation.y = -Math.PI/3; // Set to Math.PI/2, -Math.PI/2, etc. if needed
+        // Optionally scale the model if needed
+        // model.scale.set(1, 1, 1);
+        locar.add(
+          model,
+          loc.coords[1], // Longitude of the model
+          loc.coords[0] // Latitude of the model
+        );
+      } catch (err) {
+        alert("Failed to load GLB model: " + err.message);
+      }
+    }
+  });
+
+  locar.startGps();
+
+  renderer.setAnimationLoop(animate);
+
+  function animate() {
+    deviceOrientationControls.update();
+    // Position sunlight behind the camera each frame
+    const camDir = new THREE.Vector3();
+    camera.getWorldDirection(camDir);
+    // Place sunlight 10 units behind and 5 units above the camera
+    sunlight.position.copy(camera.position).add(camDir.multiplyScalar(-10)).add(new THREE.Vector3(0, 5, 0));
+    renderer.render(scene, camera);
+  }
+
+  // Optionally, you can add more ARjs/aframe event handling here if needed
+}
 
 // This function allows rendering the map view
 function renderMapView() {
@@ -148,6 +223,7 @@ function renderMapView() {
   leafletMap = L.map("map");
 
   // Add OpenStreetMap tile layer
+
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenStreetMap contributors",
   }).addTo(leafletMap);
@@ -160,20 +236,9 @@ function renderMapView() {
 
   // Add the location markers
   addLocationMarkers();
-
-  // Add custom control again
-  const centerControl = L.control({ position: "bottomright" });
-  centerControl.onAdd = function (map) {
-    const btn = L.DomUtil.create("button", "leaflet-bar center-control");
-    btn.textContent = "📍";
-    btn.title = "Center on Me";
-    L.DomEvent.disableClickPropagation(btn);
-    btn.addEventListener("click", () => locateUser(btn));
-    return btn;
-  };
-  centerControl.addTo(leafletMap);
 }
 
+/* HTML to diaplay if the map render fails */
 function renderNotFound() {
   app.innerHTML = `
     <div style="padding: 2rem; text-align: center;">
@@ -183,15 +248,16 @@ function renderNotFound() {
   `;
 }
 
+/* Function to route the page to map or AR or default */
 function router() {
   const hash = location.hash || "#";
   const match = hash.match(/^#\/ar\/(\d+)$/);
+  const isQRScanner = hash === '#/qr-scanner';
 
   if (hash === "#") {
     renderMapView();
   } else if (match) {
     renderARView(match[1]);
-    
   } else {
     renderNotFound();
   }
@@ -200,12 +266,43 @@ function router() {
 async function init() {
   try {
     locations = await fetchModelData();
-    router(); // render initial view
+    router();
     window.addEventListener("hashchange", router);
   } catch (err) {
     console.error(err);
     renderNotFound();
   }
 }
+/* --- END --- */
 
+
+/* MAIN ACTIONS */
+/* 1. Initiate the init function. */
 init();
+
+/* 2. Start a geolocation watch and update the HTML geo element data with new data. */
+const geoDiv = document.getElementById("geo-position");
+geoDiv.textContent = "Waiting for geolocation data...";
+
+async function updateGeolocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.watchPosition((position) => {
+      geoDiv.textContent = "Latitude: " +
+        position.coords.latitude.toFixed(5) + "° N, Longitude: " +
+        position.coords.longitude.toFixed(5) + "° E";
+    }, (error) => { console.error("Geolocation Error: ", error) });
+  } else {
+    console.error("Geolocation is not supported by this browser.");
+    geoDiv.textContent = "Geolocation is not supported by this browser.";
+  }
+}
+
+updateGeolocation();
+
+/* 3.  */
+
+/* --- END --- */
+
+// ---------------------------------------------- WIP ----------------------------------------------
+
+// ---------------------------------------------- WIP ----------------------------------------------

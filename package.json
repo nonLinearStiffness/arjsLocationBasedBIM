@@ -12,6 +12,11 @@
     "vite": "^6.3.5"
   },
   "dependencies": {
-    "leaflet": "^1.9.4"
+    "aframe": "^1.7.1",
+    "ar.js": "^2.2.2",
+    "leaflet": "^1.9.4",
+    "locar": "^0.1.8",
+    "mkcert": "^3.2.0",
+    "three": "0.182.0"
   }
 }

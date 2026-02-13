@@ -1,6 +1,6 @@
-# BIM-AR Model Viewer
+# BIM-AR AR.js
 
-## ModelViewer based web application for Augmented Reality visualization of public BIM models
+## AR.js based web application for Augmented Reality visualization of public BIM models
 ### Description (EN-UK)
 This prototype platform enables the visualization of filtered BIM models in Augmented Reality, tailored for urban planning and licensing scenarios in the Portuguese context. Developed within the scope of an ongoing PhD project, it focuses on transparency, accessibility, and privacy by leveraging open standards (IFC and glTF) and web-based AR technologies. The viewer supports real-time interaction and is accessible via QR code for demonstration purposes.
 

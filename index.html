@@ -1,42 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>BIM-AR Viewer</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="./src/main.css" />
-    <script type="module" src="./src/main.js"></script>
-    <script
-      type="module"
-      src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"
-    ></script>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""
-    />
-  </head>
-  <body>
-    <div
-      id="disclaimer-banner"
-      style="
+
+<head>
+  <meta charset="UTF-8" />
+  <title>BIM-AR Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="./src/main.css" />
+  <script type="module" src="./src/main.js"></script>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+
+<body>
+  <!-- Banner warning this is an eary prototype -->
+  <div id="disclaimer-banner" style="
         background: #ffeeba;
         color: #856404;
         padding: 12px;
         text-align: center;
         font-weight: bold;
         border-bottom: 1px solid #ffd966;
-      "
-    >
-      DISCLAIMER: This is an early prototype, used for demonstration. Errors are
-      expected to occur. The buildings are schematic and do not represent the real
-      surrounding buildings.
-    </div>
-    <div id="app"></div>
-    <div
-      id="map-instruction"
-      style="
+      ">
+    DISCLAIMER: This is an early prototype, used for demonstration. Errors are
+    expected to occur. The buildings are schematic and do not represent the real
+    surrounding buildings.
+  </div>
+  <div id="app">
+  </div>
+
+  <!-- Box that instructs the user how to enter AR -->
+  <div id="map-instruction" style="
         position: absolute;
         bottom : 150px;
         left: 50%;
@@ -51,9 +46,29 @@
         border: 2px solid #888;
         font-weight: bold;
         text-align: center;
-      "
-    >
-      Click the building icon to enter AR.
-    </div>
-  </body>
+      ">
+    Click the building icon to enter AR.
+  </div>
+
+  <!-- Box that indicates the real time geolocalization -->
+  <div id="geo-position" style="
+        position: absolute;
+        bottom : 60px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(255, 255, 255, 0.95);
+        color: #0e0e0e;
+        padding: 8px 18px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        font-size: 1rem;
+        z-index: 1000;
+        border: 2px solid #888;
+        font-weight: bold;
+        text-align: center;
+      ">
+    Latitude: 0.0000° N<br>Longitude: 0.0000° N</br>
+  </div>
+
+</body>
 </html>

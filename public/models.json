@@ -1,65 +1,20 @@
 [
   {
-    "id": "1",
+    "id": "0",
     "name": "Test Building",
     "coords": [
-      41.448599,
-      -8.289571
+      41.456845,
+      -8.286882
     ],
-    "modelUrl": "models/model.glb"
+    "modelUrl": "models/ccg.glb"
   },
   {
-    "id": "2",
+    "id": "1",
     "name": "CCG/ZGDV Building",
     "coords": [
       41.453149,
       -8.288615
     ],
-    "modelUrl": "models/ccg-animated.glb"
-  },
-  {
-    "id": "3",
-    "name": "NLRS_Onderwijsmodel_Bouwkundig_LOD3.2_IFC3x2",
-    "coords": [
-      41.149977,
-      -8.627673
-    ],
-    "modelUrl": "models/NLRS_Onderwijsmodel_Bouwkundig_LOD3.2_IFC3x2.glb"
-  },
-  {
-    "id": "4",
-    "name": "Ifc2x3_Duplex_Architecture.glb",
-    "coords": [
-      41.147890,
-      -8.642123
-    ],
-    "modelUrl": "models/Ifc2x3_Duplex_Architecture.glb"
-  },
-  {
-    "id": "5",
-    "name": "Ifc2x3_SampleCastle.glb",
-    "coords": [
-      41.153210,
-      -8.629876
-    ],
-    "modelUrl": "models/Ifc2x3_SampleCastle.glb"
-  },
-  {
-    "id": "6",
-    "name": "Ifc4_Revit_ARC.glb",
-    "coords": [
-      41.148765,
-      -8.615432
-    ],
-    "modelUrl": "models/Ifc4_Revit_ARC.glb"
-  },
-  {
-    "id": "7",
-    "name": "Ifc4_SampleHouse.glb",
-    "coords": [
-      41.151987,
-      -8.633210
-    ],
-    "modelUrl": "models/Ifc4_SampleHouse.glb"
+    "modelUrl": "models/ccg.glb"
   }
 ]
