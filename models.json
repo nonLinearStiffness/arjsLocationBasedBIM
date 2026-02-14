@@ -12,8 +12,7 @@
     "id": "1",
     "name": "CCG/ZGDV Building",
     "coords": [
-      41.453149,
-      -8.288615
+      41.453189303202734, -8.2883417525851
     ],
     "modelUrl": "models/ccg.glb"
   }
